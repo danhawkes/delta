@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Delta</string>
+
+    <!--  -->
+    <string name="selected_apps_title">Selected apps</string>
+    <string name="app_picker_title">Select app</string>
+    <string name="app_picker_search_action">Search</string>
+
+</resources>

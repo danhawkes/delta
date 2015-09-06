@@ -1,0 +1,77 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'me.tatarka.retrolambda'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        applicationId "co.arcs.launcher"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionName extVersionName
+        versionCode extVersionCode.toInteger()
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+    signingConfigs {
+        release {
+            storeFile file('app.keystore')
+            keyAlias 'app'
+            storePassword 'keystore-pass'
+            keyPassword 'keystore-pass'
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+dependencies {
+    // Make android less miserable
+    compile 'com.jakewharton:butterknife:7.0.1'
+
+    // RX all the things
+    compile 'io.reactivex:rxjava:1.0.13'
+    compile 'io.reactivex:rxandroid:1.0.1'
+    compile 'com.jakewharton.rxbinding:rxbinding:0.2.0'
+    compile 'com.jakewharton.rxbinding:rxbinding-appcompat-v7:0.2.0'
+    compile 'com.trello:rxlifecycle:0.3.0'
+    compile 'com.trello:rxlifecycle-components:0.3.0'
+
+    // Lists
+    compile 'com.raizlabs:UniversalAdapter:2.2.1'
+    compile 'com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.7.4'
+    compile 'com.h6ah4i.android.materialshadowninepatch:materialshadowninepatch:0.6.4'
+
+    // I've got all these method addresses left over
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:recyclerview-v7:23.0.1'
+    compile 'com.android.support:design:23.0.1'
+
+    // Misc
+    compile 'com.google.code.findbugs:jsr305:3.0.1'
+    compile 'com.google.code.gson:gson:2.4'
+
+    // Persistence
+    compile 'com.google.code.gson:gson:2.4'
+    provided 'org.immutables:gson:2.0.21'
+    provided 'org.immutables:value:2.0.21'
+    apt 'org.immutables:value:2.0.21'
+
+    // Dependency injection
+    compile 'com.google.dagger:dagger:2.0.1'
+    apt 'com.google.dagger:dagger-compiler:2.0.1'
+}
+

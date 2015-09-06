@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="arc_edge_offset">64dp</dimen>
+    <dimen name="arc_min_radius">128dp</dimen>
+    <dimen name="arc_max_radius">192dp</dimen>
+</resources>
