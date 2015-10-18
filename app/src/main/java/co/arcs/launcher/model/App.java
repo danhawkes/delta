@@ -5,7 +5,7 @@ import android.content.ComponentName;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public abstract class App {
+public abstract class App implements Comparable<App> {
 
     public abstract String getIdentifier();
 
@@ -17,5 +17,10 @@ public abstract class App {
 
     public ComponentName getComponentName() {
         return ComponentName.unflattenFromString(getComponentNameString());
+    }
+
+    @Override
+    public int compareTo(App another) {
+        return getLabel().compareToIgnoreCase(another.getLabel());
     }
 }

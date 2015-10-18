@@ -18,107 +18,96 @@ import co.arcs.launcher.ui.list_shit.AppTileAdapter;
 import co.arcs.launcher.utils.IntentDispatcher;
 import rx.subjects.PublishSubject;
 
-public class LauncherController {
+public class LauncherController implements ServiceBoundView {
 
     private final Context context;
-    private final PublishSubject<Void> destroyViewEvents = PublishSubject.create();
+    private final PublishSubject<Void> destroyEvents = PublishSubject.create();
     @Inject Store store;
+    private Callback callback;
 
-    @Bind(R.id.items_layout) ExpandingArcLayout arcLayout;
-
-    private final int edgeOffset = 100;
+    private View view;
+    @Bind((R.id.launcher)) LauncherView launcherView;
+    @Bind(R.id.arc) ExpandingArcLayout arcLayout;
+    @Bind(R.id.background) View background;
 
     public LauncherController(Context context) {
         this.context = context;
         ((LauncherApp) context.getApplicationContext()).getAppComponent().inject(this);
     }
 
-    public View onCreateView() {
-        return LayoutInflater.from(context).inflate(R.layout.view_app_grid, null, false);
-    }
+    @Override
+    public void onCreate() {
 
-    public void onViewCreated(View view) {
+        // Create view
+        view = LayoutInflater.from(context).inflate(R.layout.view_launcher, null, false);
         ButterKnife.bind(this, view);
+
+        // ???
+        launcherView.setCallback(() -> {
+            if (callback != null) {
+                callback.removeView();
+            }
+        });
 
         AppTileAdapter adapter = new AppTileAdapter(context);
         UniversalConverterFactory.create(adapter, arcLayout);
 
-        store.selectedAppLists().takeUntil(destroyViewEvents).subscribe(list -> {
+        store.selectedAppLists().takeUntil(destroyEvents).subscribe(list -> {
             adapter.clear();
             adapter.addAll(list);
         });
 
-        adapter.drops().takeUntil(destroyViewEvents).subscribe(app -> {
+        adapter.drops().takeUntil(destroyEvents).subscribe(app -> {
             IntentDispatcher.startApp(context, app.getComponentName());
         });
-
-        //        View target1 = view.findViewById(R.id.target1);
-
-        //        Observable<MotionEvent> share = RxView.touches(target1)
-        //                .takeUntil(destroyViewEvents)
-        //                .share();
-
-        //        share.subscribe(ev -> Log.d("test", "t1 " + MotionEventDebug.toString(ev)));
-
-        //        share.filter(event -> event.getActionMasked() == MotionEvent.ACTION_UP)
-        //                .filter(event -> OutsideTouchEventDispatcher.eventInViewBounds(event, target1))
-        //                .subscribe(event -> {
-        //                    IntentDispatcher.startFirefox(view.getContext().getApplicationContext());
-        //                    Log.d("test", "wooo!");
-        //                });
     }
 
-    public void onDestroyView() {
-        destroyViewEvents.onNext(null);
+    @Override
+    public void onAttachedToWindow() {
+
     }
 
-    public void onTriggerActivated(TriggerArea triggerArea, float x, float y) {
+    @Override
+    public void onDetachedFromWindow() {
 
+    }
+
+    @Override
+    public void onDestroy() {
+        destroyEvents.onNext(null);
+    }
+
+    @Override
+    public View getView() {
+        return view;
+    }
+
+    public void onTriggerActivated(TriggerArea triggerArea) {
+        if (launcherView.isLayoutRequested()) {
+            launcherView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    startActivationAnimations(triggerArea);
+                    launcherView.removeOnLayoutChangeListener(this);
+                }
+            });
+        } else {
+            startActivationAnimations(triggerArea);
+        }
+    }
+
+    private void startActivationAnimations(TriggerArea triggerArea) {
         arcLayout.onActivated(triggerArea);
-//        float angularOffset;
-//        float edgeXOffset;
-//        float edgeYOffset;
-//        switch (triggerArea.edge) {
-//            case LEFT:
-//                angularOffset = 0;
-//                edgeXOffset = edgeOffset;
-//                edgeYOffset = arcLayout.getHeight() / 2;
-//                break;
-//            case TOP:
-//                angularOffset = (float) (Math.PI / 2.0);
-//                edgeXOffset = arcLayout.getWidth() / 2;
-//                edgeYOffset = edgeOffset;
-//                break;
-//            case RIGHT:
-//                angularOffset = (float) Math.PI;
-//                edgeXOffset = arcLayout.getWidth() - edgeOffset;
-//                edgeYOffset = arcLayout.getHeight() / 2;
-//                break;
-//            case BOTTOM:
-//            default:
-//                angularOffset = (float) -(Math.PI / 2.0);
-//                edgeXOffset = arcLayout.getWidth() / 2;
-//                edgeYOffset = arcLayout.getHeight() - edgeOffset;
-//                break;
-//        }
-//        arcLayout.setAngularOffset(angularOffset);
-//        arcLayout.setOrigin(edgeXOffset, edgeYOffset);
-//
-//        float radiusInitial = 350;
-//        float radiusDelta = 50;
-//        float touchTravelRequired = radiusInitial + radiusDelta;
-//        arcLayout.setRadius(radiusInitial);
 
-//        arcLayout.setOnTouchListener((v, event) -> {
-//            int ty = (int) event.getY();
-//            float factor = Math.min(1.0f, (y - ty) / touchTravelRequired);
-//            float decay = (float) Math.pow(factor, 0.5);
-//            float radius = radiusInitial + (decay * radiusDelta);
-//            arcLayout.setRadius(radius);
-//
-//            return true;
-//        });
+        background.setAlpha(0.0f);
+        background.animate().alpha(1.0f).start();
+    }
 
-//        ObjectAnimator.ofFloat(arcLayout, "radius", 200.0f, 400.0f).start();
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
+
+    public interface Callback {
+        void removeView();
     }
 }

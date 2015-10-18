@@ -2,8 +2,10 @@ package co.arcs.launcher.ui.launcher;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 
 import co.arcs.launcher.R;
 import co.arcs.launcher.model.TriggerArea;
@@ -64,6 +66,22 @@ public class ExpandingArcLayout extends ArcLayout {
         setAngularOffset(angularOffset);
         setOrigin(x, y);
         setRadius(minRadius);
+
+        int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View child = getChildAt(i);
+            child.setAlpha(0.0f);
+            child.setTranslationX(-child.getLeft());
+            child.setTranslationY(400);
+            child.animate()
+                    .alpha(1.0f)
+                    .translationX(0)
+                    .translationY(0)
+                    .setInterpolator(new FastOutSlowInInterpolator())
+                    .setDuration(1000)
+                    .setStartDelay(i * 20)
+                    .start();
+        }
 
         float radiusInitial = minRadius;
         float radiusDelta = maxRadius - minRadius;

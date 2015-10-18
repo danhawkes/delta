@@ -16,13 +16,14 @@ public class OutsideTouchEventDispatcher {
      * and dispatches it anyway.
      */
     public static boolean dispatchTouchEvent(MotionEvent e, View v) {
-        if (v.getVisibility() == View.VISIBLE) {
-            float xOffset = -v.getLeft();
-            float yOffset = -v.getTop();
-            e.offsetLocation(xOffset, yOffset);
-            v.dispatchTouchEvent(e);
-            e.offsetLocation(-xOffset, -yOffset);
+        if (!v.isAttachedToWindow() || (v.getVisibility() != View.VISIBLE)) {
+            return false;
         }
-        return false;
+        float xOffset = -v.getLeft();
+        float yOffset = -v.getTop();
+        e.offsetLocation(xOffset, yOffset);
+        v.dispatchTouchEvent(e);
+        e.offsetLocation(-xOffset, -yOffset);
+        return true;
     }
 }

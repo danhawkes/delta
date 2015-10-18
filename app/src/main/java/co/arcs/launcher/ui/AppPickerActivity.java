@@ -11,6 +11,8 @@ import android.support.v7.widget.Toolbar;
 import com.jakewharton.rxbinding.support.v7.widget.RxSearchView;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 
+import java.util.Collections;
+
 import javax.inject.Inject;
 
 import butterknife.Bind;
@@ -47,8 +49,11 @@ public class AppPickerActivity extends RxAppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        Observable.combineLatest(store.unselectedAppLists().subscribeOn(Schedulers.io()),
-                RxSearchView.queryTextChanges(searchView), (apps, text) -> {
+        Observable.combineLatest(store.unselectedAppLists().map(list -> {
+                    Collections.sort(list);
+                    return list;
+                }).subscribeOn(Schedulers.io()), RxSearchView.queryTextChanges(searchView),
+                (apps, text) -> {
                     return Observable.from(apps)
                             .filter(app -> app.getLabel().toLowerCase().contains(text.toString()))
                             .toList();

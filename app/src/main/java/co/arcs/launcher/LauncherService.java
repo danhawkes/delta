@@ -27,7 +27,6 @@ public class LauncherService extends Service {
     private WindowManager windowManager;
     private int statusBarHeight;
 
-    private View launcherView;
     private final List<OverlayView> overlayViews = new ArrayList<>();
 
     @Inject Store store;
@@ -43,7 +42,8 @@ public class LauncherService extends Service {
         statusBarHeight = getStatusBarHeight();
 
         launcherController = new LauncherController(this);
-        launcherView = launcherController.onCreateView();
+
+        launcherController.setCallback(this::removeLauncherWindow);
 
         store.triggerAreas().takeUntil(destroyEvents).subscribe(triggerAreas -> {
             removeOverlayWindows();
@@ -67,14 +67,10 @@ public class LauncherService extends Service {
                     int action = e.getActionMasked();
                     if (action == MotionEvent.ACTION_DOWN) {
                         addLauncherWindow(area, x, y);
-                    } else if (action == MotionEvent.ACTION_UP) {
-                        removeLauncherWindow();
                     }
                 });
             }
         });
-
-        launcherController.onViewCreated(launcherView);
     }
 
     @Override
@@ -91,7 +87,6 @@ public class LauncherService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        launcherController.onDestroyView();
         removeLauncherWindow();
         removeOverlayWindows();
     }
@@ -125,26 +120,32 @@ public class LauncherService extends Service {
         return overlayView;
     }
 
+    private void removeOverlayWindows() {
+        for (View overlayView : overlayViews) {
+            windowManager.removeView(overlayView);
+        }
+    }
+
     /**
      * @param trigger The trigger area that that activated the launcher.
      * @param x       The motion event that activated the launcher.
      */
     private void addLauncherWindow(TriggerArea trigger, float x, float y) {
-        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
-                LayoutParams.TYPE_SYSTEM_OVERLAY, LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
+        if (!launcherController.getView().isAttachedToWindow()) {
+            LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
+                    LayoutParams.TYPE_SYSTEM_OVERLAY, LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
 
-        windowManager.addView(launcherView, lp);
-        launcherController.onTriggerActivated(trigger, x, y);
+            windowManager.addView(launcherController.getView(), lp);
+            launcherController.onAttachedToWindow();
+            launcherController.onTriggerActivated(trigger);
+        }
     }
 
     private void removeLauncherWindow() {
-        windowManager.removeView(launcherView);
-    }
-
-    private void removeOverlayWindows() {
-        for (View overlayView : overlayViews) {
-            windowManager.removeView(overlayView);
+        if (launcherController.getView().isAttachedToWindow()) {
+            windowManager.removeView(launcherController.getView());
+            launcherController.onDestroy();
         }
     }
 

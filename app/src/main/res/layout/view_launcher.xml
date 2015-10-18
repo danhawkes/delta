@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<co.arcs.launcher.ui.launcher.LauncherView
+    android:id="@+id/launcher"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gradient"
+        android:visibility="gone"/>
+
+    <co.arcs.launcher.ui.launcher.ExpandingArcLayout
+        android:id="@+id/arc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"/>
+
+
+    <co.arcs.launcher.ui.launcher.VDH
+        android:id="@+id/vdh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <View
+            android:id="@+id/drag_handle"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="#ff0000"/>
+
+    </co.arcs.launcher.ui.launcher.VDH>
+</co.arcs.launcher.ui.launcher.LauncherView>
