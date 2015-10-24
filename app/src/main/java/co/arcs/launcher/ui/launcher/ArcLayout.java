@@ -3,6 +3,7 @@ package co.arcs.launcher.ui.launcher;
 import android.content.Context;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import co.arcs.launcher.ui.misc.TouchDistributingFrameLayout;
@@ -46,21 +47,28 @@ public class ArcLayout extends TouchDistributingFrameLayout {
 
     public final void setRadius(float radius) {
         this.radius = radius;
-        requestLayout();
+        requestLayoutSafe();
     }
 
     public final void setAngularSize(float angularSize) {
         this.angularSize = angularSize;
-        requestLayout();
+        requestLayoutSafe();
     }
 
     public final void setAngularOffset(float angularOffset) {
         this.angularOffset = angularOffset;
-        requestLayout();
+        requestLayoutSafe();
     }
 
     public final void setOrigin(float x, float y) {
         origin.set(x, y);
-        requestLayout();
+        requestLayoutSafe();
+    }
+
+    private void requestLayoutSafe() {
+        if (!isInLayout()) {
+            Log.d("test", "requesting layout");
+            requestLayout();
+        }
     }
 }

@@ -1,18 +1,27 @@
 package co.arcs.launcher.ui.overlay;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
 import co.arcs.launcher.model.TriggerArea;
-import co.arcs.launcher.ui.launcher.ServiceBoundView;
+import co.arcs.launcher.ServiceBoundViewController;
+import rx.Observable;
+import rx.Subscription;
+import rx.subjects.PublishSubject;
 
-public class OverlayViewController implements ServiceBoundView {
+public class OverlayViewController implements ServiceBoundViewController {
 
     private final WindowManager.LayoutParams layoutParams;
     private final OverlayView view;
+    private final int statusBarHeight;
+    private PublishSubject<MotionEvent> windowTouchEvents = PublishSubject.create();
+    private Subscription touchEventsSubscription;
 
     public OverlayViewController(Context context, TriggerArea area) {
 
@@ -41,21 +50,24 @@ public class OverlayViewController implements ServiceBoundView {
                 layoutParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
                 break;
         }
+
+        this.statusBarHeight = getStatusBarHeight(context.getResources());
     }
 
     @Override
-    public void onCreate() {
-
+    public void onAddedToWindow(@Nullable Object info) {
+        touchEventsSubscription = view.touchEvents().subscribe(e -> {
+            float xOffset = e.getRawX() - e.getX();
+            float yOffset = e.getRawY() - e.getY() - statusBarHeight;
+            e.offsetLocation(xOffset, yOffset);
+            windowTouchEvents.onNext(e);
+            e.offsetLocation(-xOffset, -yOffset);
+        });
     }
 
     @Override
-    public void onAttachedToWindow() {
-
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
-
+    public void onRemovedFromWindow() {
+        touchEventsSubscription.unsubscribe();
     }
 
     @Override
@@ -71,5 +83,18 @@ public class OverlayViewController implements ServiceBoundView {
     @Override
     public WindowManager.LayoutParams getLayoutParams() {
         return layoutParams;
+    }
+
+    public Observable<MotionEvent> getWindowTouchEvents() {
+        return windowTouchEvents;
+    }
+
+    private int getStatusBarHeight(Resources res) {
+        int result = 0;
+        int resourceId = res.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId != 0) {
+            result = res.getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }

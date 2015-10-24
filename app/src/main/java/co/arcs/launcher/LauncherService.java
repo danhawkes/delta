@@ -15,21 +15,17 @@ import javax.inject.Inject;
 
 import co.arcs.launcher.model.TriggerArea;
 import co.arcs.launcher.model.redux.reducers.Store;
-import co.arcs.launcher.ui.launcher.LauncherController;
-import co.arcs.launcher.ui.launcher.ServiceBoundView;
-import co.arcs.launcher.ui.overlay.OverlayView;
+import co.arcs.launcher.ui.launcher.LauncherViewController;
 import co.arcs.launcher.ui.overlay.OverlayViewController;
 import rx.subjects.PublishSubject;
 
 public class LauncherService extends Service {
 
     private WindowManager windowManager;
-    private int statusBarHeight;
-
     @Inject Store store;
 
     private final List<OverlayViewController> overlayControllers = new ArrayList<>();
-    private LauncherController launcherController;
+    private LauncherViewController launcherController;
 
     private final PublishSubject<Void> destroyEvents = PublishSubject.create();
 
@@ -39,10 +35,8 @@ public class LauncherService extends Service {
         LauncherApp.from(this).getAppComponent().inject(this);
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        statusBarHeight = getStatusBarHeight();
 
-        launcherController = new LauncherController(this);
-
+        launcherController = new LauncherViewController(this);
         launcherController.setCallback(() -> {
             removeFromWindow(launcherController);
         });
@@ -55,28 +49,15 @@ public class LauncherService extends Service {
             overlayControllers.clear();
 
             for (TriggerArea area : triggerAreas) {
-                overlayControllers.add(new OverlayViewController(this, area));
-            }
+                OverlayViewController controller = new OverlayViewController(this, area);
+                overlayControllers.add(controller);
+                addToWindow(controller, null);
 
-            for (OverlayViewController controller : overlayControllers) {
-                addToWindow(controller);
-
-                OverlayView view = (OverlayView) controller.getView();
-
-                view.motionEvents().subscribe(e -> {
-                    float x, y;
-                    float xOffset = e.getRawX() - e.getX();
-                    float yOffset = e.getRawY() - e.getY() - statusBarHeight;
-                    e.offsetLocation(xOffset, yOffset);
-                    x = e.getX();
-                    y = e.getY();
-                    launcherController.getView().dispatchTouchEvent(e);
-                    e.offsetLocation(-xOffset, -yOffset);
-
-                    int action = e.getActionMasked();
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        addToWindow(launcherController);
+                controller.getWindowTouchEvents().takeUntil(destroyEvents).subscribe(e -> {
+                    if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                        addToWindow(launcherController, area);
                     }
+                    launcherController.getView().dispatchTouchEvent(e);
                 });
             }
         });
@@ -90,7 +71,7 @@ public class LauncherService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null; // Cannot bind
+        throw new RuntimeException("This service cannot be bound.");
     }
 
     @Override
@@ -98,31 +79,27 @@ public class LauncherService extends Service {
         super.onDestroy();
 
         removeFromWindow(launcherController);
+        launcherController.onDestroy();
+
         for (OverlayViewController controller : overlayControllers) {
             removeFromWindow(controller);
+            controller.onDestroy();
         }
     }
 
-    private void addToWindow(ServiceBoundView controller) {
+    private void addToWindow(ServiceBoundViewController controller, @Nullable Object info) {
         View view = controller.getView();
         if (!view.isAttachedToWindow()) {
             windowManager.addView(view, controller.getLayoutParams());
+            controller.onAddedToWindow(info);
         }
     }
 
-    private void removeFromWindow(ServiceBoundView controller) {
+    private void removeFromWindow(ServiceBoundViewController controller) {
         View view = controller.getView();
         if (view.isAttachedToWindow()) {
             windowManager.removeView(view);
+            controller.onRemovedFromWindow();
         }
-    }
-
-    private int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId != 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
     }
 }

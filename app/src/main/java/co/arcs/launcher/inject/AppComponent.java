@@ -8,7 +8,7 @@ import co.arcs.launcher.LauncherApp;
 import co.arcs.launcher.LauncherService;
 import co.arcs.launcher.ui.AppPickerActivity;
 import co.arcs.launcher.ui.SelectedAppsActivity;
-import co.arcs.launcher.ui.launcher.LauncherController;
+import co.arcs.launcher.ui.launcher.LauncherViewController;
 import dagger.Component;
 
 @Singleton
@@ -17,7 +17,7 @@ public interface AppComponent {
 
     void inject(LauncherApp thing);
     void inject(LauncherService thing);
-    void inject(LauncherController thing);
+    void inject(LauncherViewController thing);
     void inject(AppPickerActivity thing);
     void inject(SelectedAppsActivity thing);
 

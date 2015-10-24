@@ -2,9 +2,12 @@ package co.arcs.launcher.ui.overlay;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+import co.arcs.launcher.utils.MotionEventDebug;
+import rx.Observable;
 import rx.subjects.PublishSubject;
 
 public class OverlayView extends FrameLayout {
@@ -33,7 +36,9 @@ public class OverlayView extends FrameLayout {
         }
     }
 
-    public PublishSubject<MotionEvent> motionEvents() {
-        return motionEventsSubject;
+    public Observable<MotionEvent> touchEvents() {
+        return motionEventsSubject.doOnNext(e -> {
+            Log.d("test", MotionEventDebug.toString(e));
+        }).cast(MotionEvent.class);
     }
 }

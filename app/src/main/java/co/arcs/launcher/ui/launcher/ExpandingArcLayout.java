@@ -2,10 +2,10 @@ package co.arcs.launcher.ui.launcher;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 import co.arcs.launcher.R;
 import co.arcs.launcher.model.TriggerArea;
@@ -70,16 +70,13 @@ public class ExpandingArcLayout extends ArcLayout {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
-            child.setAlpha(0.0f);
-            child.setTranslationX(-child.getLeft());
-            child.setTranslationY(400);
-            child.animate()
+            child.setAlpha(0.4f);
+            child.setTranslationY(getHeight() - child.getTop());
+            child.animate().withLayer()
                     .alpha(1.0f)
-                    .translationX(0)
                     .translationY(0)
-                    .setInterpolator(new FastOutSlowInInterpolator())
-                    .setDuration(1000)
-                    .setStartDelay(i * 20)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .setDuration(200)
                     .start();
         }
 

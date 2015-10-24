@@ -9,8 +9,7 @@
         android:id="@+id/background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_gradient"
-        android:visibility="gone"/>
+        android:background="@drawable/bg_gradient"/>
 
     <co.arcs.launcher.ui.launcher.ExpandingArcLayout
         android:id="@+id/arc"
@@ -21,6 +20,7 @@
 
     <co.arcs.launcher.ui.launcher.VDH
         android:id="@+id/vdh"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

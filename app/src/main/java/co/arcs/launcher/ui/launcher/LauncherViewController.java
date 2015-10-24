@@ -2,6 +2,7 @@ package co.arcs.launcher.ui.launcher;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,15 +15,15 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import co.arcs.launcher.LauncherApp;
 import co.arcs.launcher.R;
+import co.arcs.launcher.ServiceBoundViewController;
 import co.arcs.launcher.model.TriggerArea;
 import co.arcs.launcher.model.redux.reducers.Store;
 import co.arcs.launcher.ui.list_shit.AppTileAdapter;
 import co.arcs.launcher.utils.IntentDispatcher;
 import rx.subjects.PublishSubject;
 
-public class LauncherController implements ServiceBoundView {
+public class LauncherViewController implements ServiceBoundViewController {
 
-    private final Context context;
     private final PublishSubject<Void> destroyEvents = PublishSubject.create();
     @Inject Store store;
     private Callback callback;
@@ -34,21 +35,17 @@ public class LauncherController implements ServiceBoundView {
     @Bind(R.id.arc) ExpandingArcLayout arcLayout;
     @Bind(R.id.background) View background;
 
-    public LauncherController(Context context) {
-        this.context = context;
+    public LauncherViewController(Context context) {
         ((LauncherApp) context.getApplicationContext()).getAppComponent().inject(this);
-    }
-
-    @Override
-    public void onCreate() {
 
         // Create view, layout params
         view = LayoutInflater.from(context).inflate(R.layout.view_launcher, null, false);
         ButterKnife.bind(this, view);
 
-        layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
+        layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
 
         // ???
         launcherView.setCallback(() -> {
@@ -57,26 +54,37 @@ public class LauncherController implements ServiceBoundView {
             }
         });
 
-        AppTileAdapter adapter = new AppTileAdapter(context);
-        UniversalConverterFactory.create(adapter, arcLayout);
-
+        AppTileAdapter arcAdapter = new AppTileAdapter(context);
+        UniversalConverterFactory.create(arcAdapter, arcLayout);
         store.selectedAppLists().takeUntil(destroyEvents).subscribe(list -> {
-            adapter.clear();
-            adapter.addAll(list);
+            arcAdapter.clear();
+            arcAdapter.addAll(list);
         });
 
-        adapter.drops().takeUntil(destroyEvents).subscribe(app -> {
+        arcAdapter.drops().takeUntil(destroyEvents).subscribe(app -> {
             IntentDispatcher.startApp(context, app.getComponentName());
         });
     }
 
     @Override
-    public void onAttachedToWindow() {
+    public void onAddedToWindow(@Nullable Object info) {
+        TriggerArea area = (TriggerArea) info;
 
+        if (launcherView.isLayoutRequested()) {
+            launcherView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    startActivationAnimations(area);
+                    launcherView.removeOnLayoutChangeListener(this);
+                }
+            });
+        } else {
+            startActivationAnimations(area);
+        }
     }
 
     @Override
-    public void onDetachedFromWindow() {
+    public void onRemovedFromWindow() {
 
     }
 
@@ -93,20 +101,6 @@ public class LauncherController implements ServiceBoundView {
     @Override
     public WindowManager.LayoutParams getLayoutParams() {
         return layoutParams;
-    }
-
-    public void onTriggerActivated(TriggerArea triggerArea) {
-        if (launcherView.isLayoutRequested()) {
-            launcherView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    startActivationAnimations(triggerArea);
-                    launcherView.removeOnLayoutChangeListener(this);
-                }
-            });
-        } else {
-            startActivationAnimations(triggerArea);
-        }
     }
 
     private void startActivationAnimations(TriggerArea triggerArea) {

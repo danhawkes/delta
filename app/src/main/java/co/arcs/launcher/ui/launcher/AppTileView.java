@@ -32,8 +32,8 @@ public class AppTileView extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if ((event.getActionMasked() == MotionEvent.ACTION_UP) &&
-                OutsideTouchEventDispatcher.eventInViewBounds(event, this)) {
+        if ((event.getActionMasked() == MotionEvent.ACTION_UP) && OutsideTouchEventDispatcher.eventInViewBounds(
+                event, this)) {
             dropsSubject.onNext(this);
         }
         return true;

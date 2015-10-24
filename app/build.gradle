@@ -62,7 +62,6 @@ dependencies {
 
     // Misc
     compile 'com.google.code.findbugs:jsr305:3.0.1'
-    compile 'com.google.code.gson:gson:2.4'
 
     // Persistence
     compile 'com.google.code.gson:gson:2.4'
