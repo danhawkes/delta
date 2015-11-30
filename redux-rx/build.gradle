@@ -1,0 +1,9 @@
+apply plugin: 'java'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+dependencies {
+    compile project(':redux-core')
+    compile 'io.reactivex:rxjava:1.0.15'
+}

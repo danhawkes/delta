@@ -1,8 +1,8 @@
 package co.arcs.launcher.model.redux.actions;
 
-import co.arcs.launcher.redux.ReduxAction;
+import co.arcs.redux.ReduxAction;
 
-public class ToggleAppSelected implements ReduxAction{
+public class ToggleAppSelected implements ReduxAction {
 
     public final String appIdentifier;
 

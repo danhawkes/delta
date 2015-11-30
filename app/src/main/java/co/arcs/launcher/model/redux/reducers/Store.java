@@ -25,12 +25,12 @@ import co.arcs.launcher.model.ImmutableState;
 import co.arcs.launcher.model.ImmutableTriggerAreas;
 import co.arcs.launcher.model.State;
 import co.arcs.launcher.model.TriggerArea;
-import co.arcs.launcher.redux.impl.BaseReduxStore;
+import co.arcs.redux.impl.RxStore;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
-public class Store extends BaseReduxStore<State> {
+public class Store extends RxStore<State> {
 
     private final StatePersister persister;
 

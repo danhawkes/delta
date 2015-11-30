@@ -1,26 +1,26 @@
 package co.arcs.launcher.model.redux.reducers;
 
-import co.arcs.launcher.model.TriggerArea;
 import co.arcs.launcher.model.ImmutableState;
 import co.arcs.launcher.model.ImmutableTriggerArea;
 import co.arcs.launcher.model.ImmutableTriggerAreas;
 import co.arcs.launcher.model.State;
+import co.arcs.launcher.model.TriggerArea;
 import co.arcs.launcher.model.redux.actions.Init;
-import co.arcs.launcher.redux.ReduxAction;
-import co.arcs.launcher.redux.ReduxReducer;
+import co.arcs.redux.Reducer;
 
-public class TriggerAreaReducer implements ReduxReducer<State> {
+public class TriggerAreaReducer implements Reducer<State, Object> {
 
     @Override
-    public State reduce(State state, ReduxAction action) {
+    public State reduce(State state, Object action) {
         if (action instanceof Init) {
-            return handle(state, (Init) action);
+            return init.reduce(state, (Init) action);
         } else {
             return state;
         }
     }
 
-    private State handle(State state, Init action) {
+    private Reducer<State, Init> init = (state, action) -> {
+
         ImmutableTriggerAreas.Builder builder = ImmutableTriggerAreas.builder();
         if (state != null) {
             builder.from(state.getTriggerAreas());
@@ -32,5 +32,5 @@ public class TriggerAreaReducer implements ReduxReducer<State> {
                 .midlineOffset(0)
                 .build());
         return ImmutableState.copyOf(state).withTriggerAreas(builder.build());
-    }
+    };
 }

@@ -4,7 +4,7 @@ import android.content.pm.ResolveInfo;
 
 import java.util.List;
 
-import co.arcs.launcher.redux.ReduxAction;
+import co.arcs.redux.ReduxAction;
 
 public class UpdateAppList implements ReduxAction {
 

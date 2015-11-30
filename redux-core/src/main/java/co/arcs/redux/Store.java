@@ -1,17 +1,13 @@
-package co.arcs.launcher.redux;
-
-import rx.Observable;
+package co.arcs.redux;
 
 /**
  * <a href="https://rackt.github.io/redux/docs/basics/Store.html">Redux store documentation</a>
  */
-public interface ReduxStore<STATE> {
+public interface Store<STATE> {
 
     STATE getState();
 
     void setState(STATE state);
 
     void dispatch(ReduxAction action);
-
-    Observable<Object> changes();
 }

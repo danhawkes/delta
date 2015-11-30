@@ -1,18 +1,18 @@
-package co.arcs.launcher.redux.impl;
+package co.arcs.redux.impl;
 
-import co.arcs.launcher.redux.ReduxAction;
-import co.arcs.launcher.redux.ReduxReducer;
-import co.arcs.launcher.redux.ReduxStore;
+import co.arcs.redux.ReduxAction;
+import co.arcs.redux.Reducer;
+import co.arcs.redux.Store;
 import rx.Observable;
 import rx.subjects.PublishSubject;
 
-public class BaseReduxStore<STATE> implements ReduxStore<STATE> {
+public class RxStore<STATE> implements Store<STATE> {
 
-    private final ReduxReducer<STATE> reducer;
+    private final Reducer<STATE, Object> reducer;
     private STATE state;
     PublishSubject<Object> changesSubject = PublishSubject.create();
 
-    public BaseReduxStore(ReduxReducer<STATE> reducer, STATE initialState) {
+    public RxStore(Reducer<STATE, Object> reducer, STATE initialState) {
         this.reducer = reducer;
         this.state = initialState;
     }
@@ -34,7 +34,6 @@ public class BaseReduxStore<STATE> implements ReduxStore<STATE> {
         setState(reducer.reduce(getState(), action));
     }
 
-    @Override
     public final Observable<Object> changes() {
         return changesSubject;
     }

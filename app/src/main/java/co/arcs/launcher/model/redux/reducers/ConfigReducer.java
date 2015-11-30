@@ -4,13 +4,12 @@ import co.arcs.launcher.model.ImmutableConfig;
 import co.arcs.launcher.model.ImmutableState;
 import co.arcs.launcher.model.State;
 import co.arcs.launcher.model.redux.actions.Init;
-import co.arcs.launcher.redux.ReduxAction;
-import co.arcs.launcher.redux.ReduxReducer;
+import co.arcs.redux.Reducer;
 
-public class ConfigReducer implements ReduxReducer<State> {
+public class ConfigReducer implements Reducer<State, Object> {
 
     @Override
-    public State reduce(State state, ReduxAction action) {
+    public State reduce(State state, Object action) {
         if (action instanceof Init) {
             ImmutableConfig.Builder builder = ImmutableConfig.builder();
             if (state.getConfig() != null) {

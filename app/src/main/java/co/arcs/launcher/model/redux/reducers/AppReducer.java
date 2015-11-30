@@ -18,33 +18,30 @@ import co.arcs.launcher.model.State;
 import co.arcs.launcher.model.redux.actions.ReorderSelectedApps;
 import co.arcs.launcher.model.redux.actions.ToggleAppSelected;
 import co.arcs.launcher.model.redux.actions.UpdateAppList;
-import co.arcs.launcher.redux.ReduxAction;
-import co.arcs.launcher.redux.ReduxReducer;
-import co.arcs.launcher.redux.impl.ReducerFunction;
+import co.arcs.redux.Reducer;
 
-public class AppReducer implements ReduxReducer<State> {
+public class AppReducer implements Reducer<State, Object> {
 
-    private final PackageManager pm;
+    private PackageManager pm;
 
     public AppReducer(Context context) {
         this.pm = context.getPackageManager();
     }
 
     @Override
-    public State reduce(State state, ReduxAction action) {
+    public State reduce(State state, Object action) {
         if (action instanceof UpdateAppList) {
-            return handle(state, (UpdateAppList) action);
+            return updateAppList.reduce(state, (UpdateAppList) action);
         } else if (action instanceof ToggleAppSelected) {
-            return handle(state, (ToggleAppSelected) action);
+            return toggleAppSelected.reduce(state, (ToggleAppSelected) action);
         } else if (action instanceof ReorderSelectedApps) {
-            return handle(state, (ReorderSelectedApps) action);
+            return reorderApps.reduce(state, (ReorderSelectedApps) action);
         } else {
             return state;
         }
     }
 
-    @ReducerFunction
-    public State handle(State state, UpdateAppList action) {
+    private final Reducer<State, UpdateAppList> updateAppList = (state, action) -> {
 
         ImmutableState.Builder stateBuilder = ImmutableState.builder();
         if (state != null) {
@@ -86,10 +83,9 @@ public class AppReducer implements ReduxReducer<State> {
         appsBuilder.selected(newSelected);
 
         return stateBuilder.apps(appsBuilder.build()).build();
-    }
+    };
 
-    @ReducerFunction
-    public State handle(State state, ToggleAppSelected action) {
+    private final Reducer<State, ToggleAppSelected> toggleAppSelected = (state, action) -> {
 
         List<App> newSelected = new ArrayList<>();
         boolean selectionRemoved = false;
@@ -106,10 +102,9 @@ public class AppReducer implements ReduxReducer<State> {
 
         return ImmutableState.copyOf(state)
                 .withApps(ImmutableApps.copyOf(state.getApps()).withSelected(newSelected));
-    }
+    };
 
-    @ReducerFunction
-    public State handle(State state, ReorderSelectedApps action) {
+    private final Reducer<State, ReorderSelectedApps> reorderApps = (state, action) -> {
 
         List<App> newSelected = new ArrayList<>(state.getApps().getSelected());
         App moved = newSelected.remove(action.a);
@@ -117,5 +112,5 @@ public class AppReducer implements ReduxReducer<State> {
 
         return ImmutableState.copyOf(state)
                 .withApps(ImmutableApps.copyOf(state.getApps()).withSelected(newSelected));
-    }
+    };
 }

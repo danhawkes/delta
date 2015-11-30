@@ -1,11 +1,11 @@
-package co.arcs.launcher.redux;
+package co.arcs.redux;
 
 import javax.annotation.Nullable;
 
 /**
  * <a href="https://rackt.github.io/redux/docs/basics/Reducers.html">Redux reducer documentation</a>
  */
-public interface ReduxReducer<STATE> {
+public interface Reducer<STATE, ACTION> {
 
-    STATE reduce(@Nullable STATE state, ReduxAction action);
+    STATE reduce(@Nullable STATE state, ACTION action);
 }
