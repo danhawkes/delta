@@ -24,6 +24,7 @@ import rx.subjects.PublishSubject;
 
 public class LauncherViewController implements ServiceBoundViewController {
 
+    private final Context context;
     private final PublishSubject<Void> destroyEvents = PublishSubject.create();
     @Inject Store store;
     private Callback callback;
@@ -37,6 +38,8 @@ public class LauncherViewController implements ServiceBoundViewController {
 
     public LauncherViewController(Context context) {
         ((LauncherApp) context.getApplicationContext()).getAppComponent().inject(this);
+
+        this.context = context;
 
         // Create view, layout params
         view = LayoutInflater.from(context).inflate(R.layout.view_launcher, null, false);
@@ -104,10 +107,14 @@ public class LauncherViewController implements ServiceBoundViewController {
     }
 
     private void startActivationAnimations(TriggerArea triggerArea) {
-        arcLayout.onActivated(triggerArea);
+        arcLayout.startRevealAnimation(triggerArea);
 
         background.setAlpha(0.0f);
-        background.animate().alpha(1.0f).start();
+        background.animate()
+                .withLayer()
+                .setDuration(context.getResources().getInteger(R.integer.reveal_animation_duration))
+                .alpha(1.0f)
+                .start();
     }
 
     public void setCallback(Callback callback) {

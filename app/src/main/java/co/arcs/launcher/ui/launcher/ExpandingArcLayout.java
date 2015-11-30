@@ -13,8 +13,8 @@ import co.arcs.launcher.model.TriggerArea;
 public class ExpandingArcLayout extends ArcLayout {
 
     private float edgeOffset;
-    private float minRadius;
-    private float maxRadius;
+    private float arcRadius;
+    private long animationDuration;
 
     public ExpandingArcLayout(Context context) {
         super(context);
@@ -34,11 +34,12 @@ public class ExpandingArcLayout extends ArcLayout {
     private void init(Context context) {
         Resources res = context.getResources();
         edgeOffset = res.getDimensionPixelOffset(R.dimen.arc_edge_offset);
-        minRadius = res.getDimensionPixelOffset(R.dimen.arc_min_radius);
-        maxRadius = res.getDimensionPixelOffset(R.dimen.arc_max_radius);
+        arcRadius = res.getDimensionPixelOffset(R.dimen.arc_radius);
+        animationDuration = res.getInteger(R.integer.reveal_animation_duration);
     }
 
-    public void onActivated(TriggerArea triggerArea) {
+    public void startRevealAnimation(TriggerArea triggerArea) {
+        // Set position of arc.
         float angularOffset, x, y;
         switch (triggerArea.getEdge()) {
             case LEFT:
@@ -65,7 +66,7 @@ public class ExpandingArcLayout extends ArcLayout {
         }
         setAngularOffset(angularOffset);
         setOrigin(x, y);
-        setRadius(minRadius);
+        setRadius(arcRadius);
 
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
@@ -76,23 +77,9 @@ public class ExpandingArcLayout extends ArcLayout {
                     .alpha(1.0f)
                     .translationY(0)
                     .setInterpolator(new DecelerateInterpolator())
-                    .setDuration(200)
+                    .setDuration(animationDuration)
                     .start();
         }
-
-        float radiusInitial = minRadius;
-        float radiusDelta = maxRadius - minRadius;
-        float touchTravelRequired = radiusInitial + radiusDelta;
-
-//        setOnTouchListener((v, event) -> {
-//            int ty = (int) event.getY();
-//            float factor = Math.min(1.0f, (y - ty) / touchTravelRequired);
-//            float decay = (float) Math.pow(factor, 0.5);
-//            float radius = radiusInitial + (decay * radiusDelta);
-//            setRadius(radius);
-//
-//            return true;
-//        });
     }
 
     float touchStartX;
