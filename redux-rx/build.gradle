@@ -1,7 +1,5 @@
 apply plugin: 'java'
-
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+apply plugin: 'me.tatarka.retrolambda'
 
 dependencies {
     compile project(':redux-core')
