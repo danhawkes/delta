@@ -25,10 +25,9 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('app.keystore')
+            storeFile file('release.keystore')
             keyAlias 'app'
-            storePassword 'keystore-pass'
-            keyPassword 'keystore-pass'
+            storePassword 'waH@2P6*yy*ZvBVe'
         }
     }
     buildTypes {
