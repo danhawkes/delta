@@ -1,6 +1,7 @@
 package co.arcs.launcher.ui.launcher;
 
 import android.view.View;
+import android.view.WindowManager;
 
 public interface ServiceBoundView {
 
@@ -13,4 +14,6 @@ public interface ServiceBoundView {
     void onDestroy();
 
     View getView();
+
+    WindowManager.LayoutParams getLayoutParams();
 }

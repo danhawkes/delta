@@ -1,8 +1,10 @@
 package co.arcs.launcher.ui.launcher;
 
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.raizlabs.universaladapter.converter.UniversalConverterFactory;
 
@@ -26,6 +28,8 @@ public class LauncherController implements ServiceBoundView {
     private Callback callback;
 
     private View view;
+    private WindowManager.LayoutParams layoutParams;
+
     @Bind((R.id.launcher)) LauncherView launcherView;
     @Bind(R.id.arc) ExpandingArcLayout arcLayout;
     @Bind(R.id.background) View background;
@@ -38,9 +42,13 @@ public class LauncherController implements ServiceBoundView {
     @Override
     public void onCreate() {
 
-        // Create view
+        // Create view, layout params
         view = LayoutInflater.from(context).inflate(R.layout.view_launcher, null, false);
         ButterKnife.bind(this, view);
+
+        layoutParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
 
         // ???
         launcherView.setCallback(() -> {
@@ -80,6 +88,11 @@ public class LauncherController implements ServiceBoundView {
     @Override
     public View getView() {
         return view;
+    }
+
+    @Override
+    public WindowManager.LayoutParams getLayoutParams() {
+        return layoutParams;
     }
 
     public void onTriggerActivated(TriggerArea triggerArea) {

@@ -11,12 +11,12 @@ public class OverlayView extends FrameLayout {
 
     private PublishSubject<MotionEvent> motionEventsSubject = PublishSubject.create();
 
-    static int[] colors = {Color.RED, Color.GREEN};
+    static int[] colors = {Color.GREEN};
     static int i = 0;
 
     public OverlayView(Context context) {
         super(context);
-        if (i == 2) {
+        if (i == colors.length) {
             i = 0;
         }
         setBackgroundColor(colors[i++] & 0x40ffffff);

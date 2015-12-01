@@ -2,14 +2,11 @@ package co.arcs.launcher;
 
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,9 @@ import javax.inject.Inject;
 import co.arcs.launcher.model.TriggerArea;
 import co.arcs.launcher.model.redux.reducers.Store;
 import co.arcs.launcher.ui.launcher.LauncherController;
+import co.arcs.launcher.ui.launcher.ServiceBoundView;
 import co.arcs.launcher.ui.overlay.OverlayView;
+import co.arcs.launcher.ui.overlay.OverlayViewController;
 import rx.subjects.PublishSubject;
 
 public class LauncherService extends Service {
@@ -27,10 +26,11 @@ public class LauncherService extends Service {
     private WindowManager windowManager;
     private int statusBarHeight;
 
-    private final List<OverlayView> overlayViews = new ArrayList<>();
-
     @Inject Store store;
+
+    private final List<OverlayViewController> overlayControllers = new ArrayList<>();
     private LauncherController launcherController;
+
     private final PublishSubject<Void> destroyEvents = PublishSubject.create();
 
     @Override
@@ -43,16 +43,25 @@ public class LauncherService extends Service {
 
         launcherController = new LauncherController(this);
 
-        launcherController.setCallback(this::removeLauncherWindow);
+        launcherController.setCallback(() -> {
+            removeFromWindow(launcherController);
+        });
 
         store.triggerAreas().takeUntil(destroyEvents).subscribe(triggerAreas -> {
-            removeOverlayWindows();
-            overlayViews.clear();
+
+            for (OverlayViewController controller : overlayControllers) {
+                removeFromWindow(controller);
+            }
+            overlayControllers.clear();
 
             for (TriggerArea area : triggerAreas) {
-                OverlayView view = createOverlayView(area);
-                windowManager.addView(view, view.getLayoutParams());
-                overlayViews.add(view);
+                overlayControllers.add(new OverlayViewController(this, area));
+            }
+
+            for (OverlayViewController controller : overlayControllers) {
+                addToWindow(controller);
+
+                OverlayView view = (OverlayView) controller.getView();
 
                 view.motionEvents().subscribe(e -> {
                     float x, y;
@@ -61,12 +70,12 @@ public class LauncherService extends Service {
                     e.offsetLocation(xOffset, yOffset);
                     x = e.getX();
                     y = e.getY();
-                    launcherView.dispatchTouchEvent(e);
+                    launcherController.getView().dispatchTouchEvent(e);
                     e.offsetLocation(-xOffset, -yOffset);
 
                     int action = e.getActionMasked();
                     if (action == MotionEvent.ACTION_DOWN) {
-                        addLauncherWindow(area, x, y);
+                        addToWindow(launcherController);
                     }
                 });
             }
@@ -87,65 +96,24 @@ public class LauncherService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        removeLauncherWindow();
-        removeOverlayWindows();
-    }
 
-    private OverlayView createOverlayView(TriggerArea area) {
-        OverlayView overlayView = new OverlayView(getApplicationContext());
-
-        boolean leftOrRight = area.getEdge() == TriggerArea.Edge.LEFT || area.getEdge() == TriggerArea.Edge.RIGHT;
-        LayoutParams lp = new LayoutParams(leftOrRight ? area.getThickness() : area.getWidth(),
-                leftOrRight ? area.getWidth() : area.getThickness(),
-                leftOrRight ? 0 : area.getMidlineOffset(),
-                leftOrRight ? area.getMidlineOffset() : 0, LayoutParams.TYPE_PHONE,
-                LayoutParams.FLAG_NOT_TOUCH_MODAL |
-                        LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH |
-                        LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
-        switch (area.getEdge()) {
-            case LEFT:
-                lp.gravity = Gravity.CENTER_VERTICAL | Gravity.LEFT;
-                break;
-            case TOP:
-                lp.gravity = Gravity.CENTER_HORIZONTAL | Gravity.TOP;
-                break;
-            case RIGHT:
-                lp.gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
-                break;
-            case BOTTOM:
-                lp.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-                break;
-        }
-        overlayView.setLayoutParams(lp);
-        return overlayView;
-    }
-
-    private void removeOverlayWindows() {
-        for (View overlayView : overlayViews) {
-            windowManager.removeView(overlayView);
+        removeFromWindow(launcherController);
+        for (OverlayViewController controller : overlayControllers) {
+            removeFromWindow(controller);
         }
     }
 
-    /**
-     * @param trigger The trigger area that that activated the launcher.
-     * @param x       The motion event that activated the launcher.
-     */
-    private void addLauncherWindow(TriggerArea trigger, float x, float y) {
-        if (!launcherController.getView().isAttachedToWindow()) {
-            LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
-                    LayoutParams.TYPE_SYSTEM_OVERLAY, LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
-
-            windowManager.addView(launcherController.getView(), lp);
-            launcherController.onAttachedToWindow();
-            launcherController.onTriggerActivated(trigger);
+    private void addToWindow(ServiceBoundView controller) {
+        View view = controller.getView();
+        if (!view.isAttachedToWindow()) {
+            windowManager.addView(view, controller.getLayoutParams());
         }
     }
 
-    private void removeLauncherWindow() {
-        if (launcherController.getView().isAttachedToWindow()) {
-            windowManager.removeView(launcherController.getView());
-            launcherController.onDestroy();
+    private void removeFromWindow(ServiceBoundView controller) {
+        View view = controller.getView();
+        if (view.isAttachedToWindow()) {
+            windowManager.removeView(view);
         }
     }
 
