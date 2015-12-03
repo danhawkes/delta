@@ -37,11 +37,6 @@ android {
     }
 }
 
-retrolambda {
-    jvmArgs '-noverify'
-    incremental false
-}
-
 dependencies {
     // Make android less miserable
     compile 'com.jakewharton:butterknife:7.0.1'
