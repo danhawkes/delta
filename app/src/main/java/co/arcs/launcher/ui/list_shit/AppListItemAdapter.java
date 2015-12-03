@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 
 import com.h6ah4i.android.widget.advrecyclerview.draggable.DraggableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.draggable.ItemDraggableRange;
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.LegacySwipeableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemAdapter;
 import com.jakewharton.rxbinding.view.RxView;
 import com.raizlabs.coreutils.view.ViewUtils;
 
@@ -32,7 +32,8 @@ import rx.subjects.PublishSubject;
 
 import static co.arcs.launcher.utils.RxUtils.defaultSchedulers;
 
-public class AppListItemAdapter extends Adapter<AppListItemViewHolder> implements DraggableItemAdapter<AppListItemViewHolder>, SwipeableItemAdapter<AppListItemViewHolder> {
+public class AppListItemAdapter extends Adapter<AppListItemViewHolder> implements
+        DraggableItemAdapter<AppListItemViewHolder>, LegacySwipeableItemAdapter<AppListItemViewHolder> {
 
     private final PackageManager pm;
     private final LayoutInflater inflater;
