@@ -72,10 +72,8 @@ public class ExpandingArcLayout extends ArcLayout {
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
             child.setAlpha(0.4f);
-            child.setTranslationY(getHeight() - child.getTop());
             child.animate().withLayer()
                     .alpha(1.0f)
-                    .translationY(0)
                     .setInterpolator(new DecelerateInterpolator())
                     .setDuration(animationDuration)
                     .start();
